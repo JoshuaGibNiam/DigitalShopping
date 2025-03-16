@@ -4,13 +4,14 @@ class Account(ABC):
     accounts = {} #id, obj
 
     @classmethod
-    def set_id(cls):
+    def set_id(cls) -> str:
+        """Sets a random account id (6 digits), returns a string"""
         id = random.randint(1, 999999)
         for k in Account.accounts.keys():
             while Account.accounts[k] == id:
                 id = random.randint(1, 999999)
 
-        return id
+        return str(id)
 
     def __init__(self, name, email, phone):
         self.name = name
@@ -69,6 +70,10 @@ class Account(ABC):
         del self._phone
         del self.name
         del self._cart
+
+    @abstractmethod
+    def __str__(self):
+        pass
 
 
 
