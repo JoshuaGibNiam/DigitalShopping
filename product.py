@@ -60,6 +60,15 @@ class Shop:
         self.field = field
         self.products = {}
         self.products_sold = 0
+        self.id = self.set_id()
+
+    @classmethod
+    def set_id(cls) -> str:
+        """Sets a random product id (7 digits), returns a string"""
+        id = random.randint(1, 9999999)
+        while id in Market.shops:
+            id = random.randint(1, 9999999)
+        return str(id)
 
     def add_product(self, *product):
         """Adds a product (pass Product obj as argument) to the shop"""
@@ -76,6 +85,22 @@ class Shop:
         print(f"{self.name} sells: ")
         for v in self.products.values():
             print(f" - {v}")
+
+class Market:
+    """The whole online market."""
+    shops = {} #id, obj
+
+    def __init__(self):
+        pass
+
+    def add_shop(self, shop: Shop):
+        if isinstance(shop, Shop):
+            self.shops[shop.id] = shop
+        else:
+            print("Shop type is not Shop!")
+            return False
+        return True
+
 
 
 if __name__ == "__main__":
