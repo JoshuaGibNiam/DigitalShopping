@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
 import random
+
+from pywin.dialogs import status
+
+
 class Account(ABC):
     accounts = {} #id, obj
 
@@ -13,7 +17,7 @@ class Account(ABC):
 
         return str(id)
 
-    def __init__(self, name, email, phone):
+    def __init__(self, name, email, phone, password):
         self.name = name
         self._email = email
         self._phone = phone
@@ -22,9 +26,22 @@ class Account(ABC):
         self.__order_history = {}
         self.status = "unverified"
         self.id = Account.set_id()
+        self.__password = password
 
         Account.accounts[self.id] = self
+        self.verifyid = random.randint(1, 99999999)
 
+    @property
+    def password(self):
+        return self.__password
+
+    @password.setter
+    def password(self, password):
+        self.__password = password
+
+    @password.deleter
+    def password(self):
+        del self.__password
 
     @property
     def email(self, email):
@@ -74,6 +91,56 @@ class Account(ABC):
     @abstractmethod
     def __str__(self):
         pass
+
+    def verify(self):  #this is rather obsolete
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+
+        gmail_user = "anonymousgilbert44.gmail.com"
+        gmail_password = "iamgilberttheking" #no steal i use new useless acc i cannot set up app password
+
+        to_email = f"{self.email}"
+        subject = "Account Verification"
+        body = (f"This is concerning your account set-up. To successfully activate your account, \n"
+                f"Please enter the following number into your console: \n"
+                f"{self.verifyid}\n")
+
+
+        msg = MIMEMultipart()
+        msg["From"] = gmail_user
+        msg["To"] = to_email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body, "plain"))
+
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(gmail_user, gmail_password)
+            server.sendmail(gmail_user, to_email, msg.as_string())
+            server.quit()
+            print("A verification email was sent successfully to your email. ")
+            idtry = input("Please enter the verification number: ")
+            if idtry == self.verifyid:
+                print("Account will be now activated!")
+                self.status = "active"
+            else:
+                print("Unsuccessful. Account will be deactivated.")
+                self.status = "deactivated"
+        except Exception as e:
+            print("Failed to send email:", e)
+
+
+    def overridestatus(self, status):
+        if status == "deactivated":
+            self.deactivate()
+        elif status == "active":
+            self.status = status
+        elif status == "unverified":
+            self.status = status
+        else:
+            self.status = "unverified"
+
 
 
 
