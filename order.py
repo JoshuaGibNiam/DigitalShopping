@@ -3,6 +3,8 @@ from seller import Seller
 from product import Product
 import random
 from datetime import datetime
+
+
 class Order:
     @classmethod
     def set_id(cls) -> str:
@@ -27,6 +29,12 @@ class Order:
     def __str__(self):
         return (f"Order {self.id}: Customer {self.customer.id}; Seller: {self.seller.id} \n"
                 f"  Order for product {self.product.id} made at {self.time} .")
+
+    def pack(self):
+        self.product = self.product.__dict__
+        self.customer = self.customer.__dict__
+        self.seller = self.seller.__dict__
+        return self.__dict__
 
     def list_orders(self):
         for e, v in enumerate(Order.orders.values()):

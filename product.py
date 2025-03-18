@@ -1,22 +1,40 @@
 import random
+from seller import Seller
+import json
 class Product:
-    def __init__(self, name, price, description="", quantity=1):
+    products = {}
+    def __init__(self, name, price, seller, description="", quantity=1):
         self.name = name
         self.price = price
+        self.seller = seller #seller obj
         self.description = description
         self.sold = 0
         self.quantity = quantity
         self.id = self.set_id()
+        Product.products[self.id] = self
 
     def __str__(self):
         return (f"Product {self.id}: {self.name} at ${self.price} \n"
                 f"{self.description}\n")
 
+    def pack(self):
+        self.seller = self.seller.__dict__
+        return self.__dict__
+
+    def dump(self):
+        self.pack()
+        with open('files/products.json', 'w') as file:
+            json.dump(self.pack(), file, indent=4)
+
+    @classmethod
+    def pack_all(cls):
+        return {k: v.pack() for k, v in cls.products.items()}
+
     @classmethod
     def set_id(cls) -> str:
         """Sets a random product id (7 digits), returns a string"""
         id = random.randint(1, 9999999)
-        while id in Shop.products:
+        while id in Product.products:
             id = random.randint(1, 9999999)
         return str(id)
 
@@ -53,14 +71,21 @@ class Product:
             return False
 
 
+
 class Shop:
-    products = {}    #id: obj
+
     def __init__(self, name, field="null"):
         self.name = name
         self.field = field
-        self.products = {}
+        self.products = {} #id: obj
         self.products_sold = 0
         self.id = self.set_id()
+
+    def pack(self):
+        self.products = {k: v.__dict__ for k, v in self.products.items()}
+        return self.__dict__
+
+
 
     @classmethod
     def set_id(cls) -> str:
@@ -93,6 +118,10 @@ class Market:
     def __init__(self):
         pass
 
+    def pack(self):
+        Market.shops = {k: v.__dict__ for k, v in Market.shops.items()}
+        return Market.shops
+
     def add_shop(self, shop: Shop):
         if isinstance(shop, Shop):
             self.shops[shop.id] = shop
@@ -100,16 +129,19 @@ class Market:
             print("Shop type is not Shop!")
             return False
         return True
-
+    def load(self):
+        self.pack()
+        with open('products.json', 'w') as file:
+            json.dump(self.shops, file, indent=4)
+            file.close()
 
 
 if __name__ == "__main__":
-    pencil = Product("Pencil", 1, quantity=100, description="A Cheap&Easy pencil.")
-    book = Product("Book", 10, quantity=10, description="Our very own book documenting the history of our company.")
+    seller1 = Seller("Joshy", "----", "019019019", "password123")
+    pencil = Product("Pencil", 1, seller1, quantity=100, description="A Cheap&Easy pencil.")
+    book = Product("Book", 10, seller1, quantity=10, description="Our very own book documenting the history of our company.")
     bookstore = Shop("Bookstore")
     bookstore.add_product(pencil, book)
     bookstore.list_products()
 
-
-
-
+    bookstore.pack()

@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 import random
-
-from pywin.dialogs import status
+import json
 
 
 class Account(ABC):
@@ -23,13 +22,25 @@ class Account(ABC):
         self._phone = phone
         self._cart = []
         self.__balance = 0
-        self.__order_history = {}
+        self.__order_history = {}  #index, obj
         self.status = "unverified"
         self.id = Account.set_id()
         self.__password = password
 
         Account.accounts[self.id] = self
         self.verifyid = random.randint(1, 99999999)
+
+    def pack(self):
+        self.__order_history = {k: v.__dict__ for k, v in self.__order_history.items()}
+        return self.__dict__
+
+    def dump(self):
+        data = self.pack()
+        path = "files/accounts.json"
+        with open(path, "w") as f:
+            json.dump(data, f, indent=4)
+            f.close()
+
 
     @property
     def password(self):
